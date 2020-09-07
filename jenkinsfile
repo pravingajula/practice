@@ -1,0 +1,22 @@
+def worcspce;
+node
+{
+    stage('chckout')
+    {
+        checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/wakaleo/game-of-life.git']]])
+        workspace =pwd()
+    }
+    stage('static code analysis')
+    {
+        echo "this is statice code testing"
+    }
+    stage('build')
+    {
+        echo "this is build stage"
+    }
+    stage('deploy')
+    {
+        echo "the praject will be deployinng"
+    }
+    
+}
