@@ -14,11 +14,12 @@
 #EXPOSE 22
 #CMD ["/usr/sbin/sshd", "-D"]
 
-FROM centos:latest
+#FROM centos:latest
 # Pull base image 
-#From tomcat:8-jre8 
+From tomcat:8-jre8 
 
 # Maintainer 
-#MAINTAINER "praveen" 
+MAINTAINER "praveen" 
 
-#COPY /var/lib/jenkins/workspace/deploy_on_docker/webapp/target/webapp.war /usr/local/tomcat/webapps
+COPY ./webapp.war /usr/local/tomcat/webapps
+
