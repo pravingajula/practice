@@ -1,22 +1,45 @@
-def worcspce;
-node
-{
-    stage('chckout')
-    {
-        checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/pravingajula/practice.git']]])
-        workspace =pwd()
-    }
-    stage('static code analysis')
-    {
-        echo "this is statice code testing"
-    }
-    stage('build')
-    {
-        echo "this is build stage"
-    }
-    stage('deploy')
-    {
-        echo "the praject will be deployinng"
+pipeline{
+    agent any
+    
+    //if not we cat give 
+    // PATH = /opt/maven/bin:$PATH
+    //if we want set any variables we can set it here it will work our all script
+    environment{
+        mvnHOME = tool name: 'maven', type: 'maven'
+        mvnCMD = "${mvnHOME}/bin/mvn"
     }
     
+    stages{
+        stage("SCM CHECKOUT"){
+            steps{
+                git 'https://github.com/pravingajula/practice.git'
+                echo "github repository cloned seccessfully"
+            }
+                 
+        }
+        stage("mavan build the environment veriables setup upsaide of the script"){
+            steps{
+                sh "${mvnCMD} clean package"
+                //to change this file name we need add jenkins user under visudo 
+                //sh "sudo mv wepapp/target/*.war webapp/target/pvrs.war"
+                sh "sudo mv webapp/target/*.war webapp/target/pvrs.war"
+            }
+            
+        }
+        stage('deploy on dev_server'){
+            steps{
+                sshagent(['tomcat_12345']) {
+                    sh """
+                        scp -o StrictHostKeyChecking=no  webapp/target/pvrs.war ubuntu@15.206.124.183:/opt/praveen/tomcat8/webapps/
+                        ssh ubuntu@15.206.124.183 /opt/praveen/tomcat8/bin/shutdown.sh
+                        ssh ubuntu@15.206.124.183 /opt/praveen/tomcat8/bin/startup.sh
+                    
+                    """
+            }
+                //if we want do locally then we need to follow this pracess
+                //sh "sudo mv webapp/target/*.war /var/lib/tomcat9/webapps/pvrs.war"
+                
+            }
+        }
+    }
 }
