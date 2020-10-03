@@ -1,0 +1,35 @@
+//if want to add variable as a global then need to add like this
+//def mvnHOME = tool name: 'maven', type: 'maven'
+//def mvnCMD = "${mvnHOME}/bin/mvn"
+node{
+    stage('fatch code form github repository'){
+        git 'https://github.com/pravingajula/practice.git'
+          
+    }
+    stage('mvn for creating package'){
+      def mvnHOME = tool name: 'maven', type: 'maven'
+      def mvnCMD = "${mvnHOME}/bin/mvn"
+      sh "${mvnCMD} clean package"
+    }
+    stage('pwd'){
+        sh 'pwd'
+    }
+    stage('docker image creation'){
+        sh 'docker rmi -f pravin786/pvr_demo'
+        sh 'docker build -t pravin786/pvr_demo .'
+    }
+    stage('push file into dockerhun repo'){
+        withCredentials([string(credentialsId: 'docker-pwd', variable: 'dockerHubpasswd')]){
+        sh "docker login -u pravin786 -p ${dockerHubpasswd}"
+        sh 'docker push pravin786/pvr_demo'
+    }
+    }
+    stage('run docker container as a tomcat_web server'){
+        def DockerRun = 'sudo docker run -d --name tom_web -p 8084:8080 pravin786/pvr_demo'
+        sshagent(['docker_engin']) {
+          sh "ssh -o StrictHostKeyChecking=no ubuntu@13.232.201.21 ${DockerRun}"
+    }
+        
+    }
+    
+}
